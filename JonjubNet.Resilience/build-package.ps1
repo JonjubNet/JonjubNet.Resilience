@@ -1,6 +1,6 @@
 # Script para construir y empaquetar JonjubNet.Resilience
 param(
-    [string]$Version = "1.0.0",
+    [string]$Version = "1.0.2",
     [string]$Configuration = "Release",
     [switch]$SkipTests = $false
 )

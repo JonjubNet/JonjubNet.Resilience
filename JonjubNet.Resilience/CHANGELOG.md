@@ -5,6 +5,12 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2024-01-19
+
+### Corregido
+- Actualizada versión para resolver conflicto de tag en GitHub
+- Sincronización de versiones en todos los archivos de configuración
+
 ## [1.0.0] - 2024-01-15
 
 ### Agregado

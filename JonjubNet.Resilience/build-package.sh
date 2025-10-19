@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script para construir y empaquetar JonjubNet.Resilience
-VERSION="1.0.0"
+VERSION="1.0.2"
 CONFIGURATION="Release"
 SKIP_TESTS=false
 
