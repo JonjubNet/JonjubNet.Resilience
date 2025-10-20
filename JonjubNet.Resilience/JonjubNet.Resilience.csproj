@@ -7,7 +7,7 @@
     
     <!-- Configuraci�n del paquete NuGet -->
     <PackageId>JonjubNet.Resilience</PackageId>
-    <Version>1.0.8</Version>
+    <Version>1.0.9</Version>
     <Authors>JonjubNet</Authors>
     <Company>JonjubNet</Company>
     <Description>Biblioteca de resiliencia para aplicaciones .NET que implementa patrones como Circuit Breaker, Retry, Timeout, Bulkhead y Fallback usando Polly.</Description>
