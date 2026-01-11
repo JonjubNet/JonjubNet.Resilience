@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace JonjubNet.Resilience.Configuration
+namespace JonjubNet.Resilience.Core.Configuration
 {
     /// <summary>
     /// Configuración genérica para patrones de resiliencia

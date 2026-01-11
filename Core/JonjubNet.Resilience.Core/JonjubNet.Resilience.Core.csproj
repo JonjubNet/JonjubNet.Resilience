@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    
+    <!-- Configuración del paquete NuGet -->
+    <PackageId>JonjubNet.Resilience.Core</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Onuar Jiménez</Authors>
+    <Company>JonjubNet</Company>
+    <Description>Core interfaces and configuration for resilience patterns in .NET applications.</Description>
+    <PackageTags>resilience;interfaces;configuration;core</PackageTags>
+    <PackageProjectUrl>https://github.com/jonjubnet/JonjubNet.Resilience</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jonjubnet/JonjubNet.Resilience</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    
+    <!-- Configuración de compilación -->
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IncludeSymbols>false</IncludeSymbols>
+    <RootNamespace>JonjubNet.Resilience.Core</RootNamespace>
+    <AssemblyName>JonjubNet.Resilience.Core</AssemblyName>
+    
+    <!-- Configuración de documentación -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+</Project>
+

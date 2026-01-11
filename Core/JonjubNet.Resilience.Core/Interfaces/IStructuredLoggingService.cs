@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JonjubNet.Resilience.Interfaces
+namespace JonjubNet.Resilience.Core.Interfaces
 {
     /// <summary>
     /// Interfaz para el servicio de logging estructurado genérico
@@ -40,3 +40,4 @@ namespace JonjubNet.Resilience.Interfaces
         void LogError(string message, string operationName, string category, string? userId = null, Dictionary<string, object>? context = null, Exception? exception = null);
     }
 }
+

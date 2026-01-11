@@ -1,0 +1,142 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    
+    <!-- Configuración del paquete NuGet -->
+    <PackageId>JonjubNet.Resilience</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Onuar Jiménez</Authors>
+    <Company>JonjubNet</Company>
+    <Description>Biblioteca de resiliencia para aplicaciones .NET que implementa patrones como Circuit Breaker, Retry, Timeout, Bulkhead y Fallback usando Polly.</Description>
+    <PackageTags>resilience;polly;circuit-breaker;retry;timeout;bulkhead;fallback;microservices</PackageTags>
+    <PackageProjectUrl>https://github.com/jonjubnet/JonjubNet.Resilience</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jonjubnet/JonjubNet.Resilience</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    
+    <!-- Configuración de compilación -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <RootNamespace>JonjubNet.Resilience</RootNamespace>
+    <AssemblyName>JonjubNet.Resilience</AssemblyName>
+    
+    <!-- Configuración de documentación -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- CRÍTICO: IncludeAssets="none" evita completamente que NuGet genere dependencias de paquetes -->
+    <!-- Los DLLs se incluyen directamente en el paquete mediante CopyProjectReferencesToPackage -->
+    <ProjectReference Include="..\..\Core\JonjubNet.Resilience.Core\JonjubNet.Resilience.Core.csproj">
+      <IncludeAssets>none</IncludeAssets>
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Infrastructure\JonjubNet.Resilience.Polly\JonjubNet.Resilience.Polly.csproj">
+      <IncludeAssets>none</IncludeAssets>
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="LICENSE" Pack="true" PackagePath="\" />
+    <None Include="CHANGELOG.md" Pack="true" PackagePath="\" />
+    <None Include="appsettings.example.json" Pack="true" PackagePath="\" />
+    <None Include="icon.png" Pack="true" PackagePath="" />
+    <None Include="..\..\Docs\IMPLEMENTATION_GUIDE.md" Pack="true" PackagePath="docs\" />
+    <None Include="..\..\Docs\API_REFERENCE.md" Pack="true" PackagePath="docs\" />
+    <None Include="..\..\Docs\ADVANCED_EXAMPLES.md" Pack="true" PackagePath="docs\" />
+    <None Include="..\..\Docs\BEST_PRACTICES.md" Pack="true" PackagePath="docs\" />
+  </ItemGroup>
+
+  <!-- Configurar para incluir ensamblados de proyectos referenciados en el paquete -->
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+    <!-- Evitar que NuGet genere dependencias de paquetes para ProjectReference -->
+    <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
+  
+  <!-- Target para incluir todos los DLLs de proyectos referenciados en el paquete -->
+  <Target Name="CopyProjectReferencesToPackage" 
+          BeforeTargets="GenerateNuspec"
+          DependsOnTargets="ResolveProjectReferences">
+    
+    <Message Text="=== CopyProjectReferencesToPackage ===" Importance="high" />
+    <Message Text="Configuration: $(Configuration)" Importance="high" />
+    <Message Text="TargetFramework: $(TargetFramework)" Importance="high" />
+    <Message Text="Project References: @(ProjectReference->Count())" Importance="high" />
+    
+    <!-- Asegurar que los proyectos referenciados estén compilados -->
+    <MSBuild Projects="@(ProjectReference)" 
+             Targets="Build" 
+             Properties="Configuration=$(Configuration);Platform=$(Platform);TargetFramework=$(TargetFramework)" 
+             SkipNonexistentTargets="false" 
+             ContinueOnError="false" />
+    
+    <!-- Obtener las rutas de salida de los proyectos referenciados -->
+    <MSBuild Projects="@(ProjectReference)" 
+             Targets="GetTargetPath" 
+             Properties="Configuration=$(Configuration);Platform=$(Platform);TargetFramework=$(TargetFramework)" 
+             SkipNonexistentTargets="false" 
+             ContinueOnError="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_ReferencedProjectOutputs" />
+    </MSBuild>
+    
+    <Message Text="Referenced Outputs Found: @(_ReferencedProjectOutputs->Count())" Importance="high" />
+    
+    <!-- Agregar los DLLs al paquete (excluir el proyecto principal) -->
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="@(_ReferencedProjectOutputs)" 
+                               Condition="'%(Extension)' == '.dll' AND '%(Filename)' != '$(AssemblyName)'">
+        <PackagePath>lib/$(TargetFramework)/%(Filename)%(Extension)</PackagePath>
+      </TfmSpecificPackageFile>
+      <!-- Incluir también los archivos XML de documentación -->
+      <TfmSpecificPackageFile Include="@(_ReferencedProjectOutputs->'%(RootDir)%(Directory)%(Filename).xml')" 
+                               Condition="Exists('%(RootDir)%(Directory)%(Filename).xml') AND '%(Filename)' != '$(AssemblyName)'">
+        <PackagePath>lib/$(TargetFramework)/%(Filename).xml</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+    
+    <!-- Log de resultados -->
+    <Message Text="=== RESULTS ===" Importance="high" />
+    <Message Text="Total DLLs to include: @(TfmSpecificPackageFile->Count())" Importance="high" />
+    <Message Text="File: %(TfmSpecificPackageFile.Identity) -> %(TfmSpecificPackageFile.PackagePath)" Importance="high" />
+    
+    <!-- Error si no se encontraron DLLs -->
+    <Error Text="CRITICAL ERROR: No referenced project DLLs found to include in package! Expected DLLs from @(ProjectReference->Count()) projects but found @(TfmSpecificPackageFile->Count()). Check build output paths." 
+           Condition="@(TfmSpecificPackageFile->Count()) == 0" />
+  </Target>
+  
+  <!-- Target para eliminar dependencias de ProjectReference del .nuspec (multi-plataforma) -->
+  <Target Name="RemoveProjectReferenceDependenciesFromNuspec" AfterTargets="GenerateNuspec" BeforeTargets="Pack">
+    <PropertyGroup>
+      <NuspecFile>$(IntermediateOutputPath)$(PackageId).nuspec</NuspecFile>
+    </PropertyGroup>
+    <!-- Usar sed en Linux/Mac y PowerShell en Windows -->
+    <Exec Command="sed -i 's/&lt;dependency id=&quot;JonjubNet\.Resilience\.[^&quot;]*&quot;[^&gt;]*&gt;[^&lt;]*&lt;\/dependency&gt;//g' '$(NuspecFile)'" 
+          Condition="Exists('$(NuspecFile)') AND '$(OS)' != 'Windows_NT'" 
+          ContinueOnError="true" />
+    <!-- PowerShell para Windows -->
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$content = Get-Content '$(NuspecFile)' -Raw; $content = $content -replace '&lt;dependency id=&quot;JonjubNet\.Resilience\.[^&quot;]*&quot;[^&gt;]*&gt;[^&lt;]*&lt;/dependency&gt;', ''; Set-Content -Path '$(NuspecFile)' -Value $content -NoNewline&quot;" 
+          Condition="Exists('$(NuspecFile)') AND '$(OS)' == 'Windows_NT'" 
+          ContinueOnError="true" />
+  </Target>
+
+</Project>
+

@@ -1,3 +1,22 @@
 <Solution>
-  <Project Path="JonjubNet.Resilience/JonjubNet.Resilience.csproj" />
+  <Folder Name="/src/" />
+  <Folder Name="/src/Core/">
+    <Project Path="Core/JonjubNet.Resilience.Core/JonjubNet.Resilience.Core.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="Infrastructure/JonjubNet.Resilience.Polly/JonjubNet.Resilience.Polly.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentation/">
+    <Project Path="Presentation/JonjubNet.Resilience/JonjubNet.Resilience.csproj" />
+  </Folder>
+  <Folder Name="/Tests/" />
+  <Folder Name="/Tests/Core/">
+    <Project Path="Tests/Core/JonjubNet.Resilience.Core.Tests/JonjubNet.Resilience.Core.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Infrastructure/">
+    <Project Path="Tests/Infrastructure/JonjubNet.Resilience.Polly.Tests/JonjubNet.Resilience.Polly.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Integration/">
+    <Project Path="Tests/Integration/JonjubNet.Resilience.Integration.Tests/JonjubNet.Resilience.Integration.Tests.csproj" />
+  </Folder>
 </Solution>

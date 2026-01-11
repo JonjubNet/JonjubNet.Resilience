@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace JonjubNet.Resilience.Interfaces
+namespace JonjubNet.Resilience.Core.Interfaces
 {
     /// <summary>
     /// Interfaz para el servicio de resiliencia genérico
@@ -70,3 +70,4 @@ namespace JonjubNet.Resilience.Interfaces
             Dictionary<string, object>? context = null);
     }
 }
+
