@@ -31,6 +31,11 @@ namespace JonjubNet.Resilience.Integration.Tests
                 })
                 .Build();
 
+            // Registrar IStructuredLoggingService (requerido por ResilienceService)
+            var loggingServiceMock = new Mock<IStructuredLoggingService>();
+            services.AddSingleton(loggingServiceMock.Object);
+            services.AddLogging();
+
             // Act
             services.AddResilienceInfrastructure(configuration);
             var serviceProvider = services.BuildServiceProvider();
@@ -71,13 +76,14 @@ namespace JonjubNet.Resilience.Integration.Tests
 
             // Assert
             result.Should().Be("success");
+            // El servicio llama a LogInformation 2 veces: al inicio y al completar exitosamente
             loggingServiceMock.Verify(
                 x => x.LogInformation(
                     It.IsAny<string>(),
                     "IntegrationTest",
                     "Resilience",
                     It.IsAny<Dictionary<string, object>>()),
-                Times.Once);
+                Times.Exactly(2));
         }
 
         [Fact]
