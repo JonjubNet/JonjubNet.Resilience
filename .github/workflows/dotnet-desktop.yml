@@ -102,6 +102,9 @@ jobs:
         name: nuget-packages
         path: ./packages
 
+    - name: List packages
+      run: ls -la ./packages/
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
@@ -121,8 +124,10 @@ jobs:
           ```bash
           dotnet add package JonjubNet.Resilience --version ${{ github.ref_name }}
           ```
-        files: ./packages/*.nupkg
+        files: |
+          ./packages/*.nupkg
         draft: false
         prerelease: false
+        fail_on_unmatched_files: false
       env:
-        GITHUB_TOKEN: ${{ secrets.JONJUBNET_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
