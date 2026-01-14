@@ -105,6 +105,18 @@ jobs:
     - name: List packages
       run: ls -la ./packages/
 
+    - name: Delete existing release if exists
+      run: |
+        if gh release view ${{ github.ref_name }} >/dev/null 2>&1; then
+          echo "Release ${{ github.ref_name }} exists, deleting..."
+          gh release delete ${{ github.ref_name }} --yes
+        else
+          echo "Release ${{ github.ref_name }} does not exist, skipping delete"
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.JONJUBNET_TOKEN }}
+      continue-on-error: true
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
