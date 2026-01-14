@@ -110,6 +110,7 @@ jobs:
       with:
         tag_name: ${{ github.ref_name }}
         name: Release ${{ github.ref_name }}
+        token: ${{ secrets.JONJUBNET_TOKEN }}
         body: |
           ## JonjubNet.Resilience ${{ github.ref_name }}
           
@@ -129,5 +130,3 @@ jobs:
         draft: false
         prerelease: false
         fail_on_unmatched_files: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.JONJUBNET_TOKEN }}
