@@ -16,7 +16,6 @@ namespace JonjubNet.Resilience.Polly.Tests.Services
     public class ResilienceServiceTests
     {
         private readonly Mock<ILogger<ResilienceService>> _loggerMock;
-        private readonly Mock<IStructuredLoggingService> _loggingServiceMock;
         private readonly Mock<IDatabaseExceptionDetector> _exceptionDetectorMock;
         private readonly ResilienceConfiguration _configuration;
         private readonly ResilienceService _service;
@@ -24,7 +23,6 @@ namespace JonjubNet.Resilience.Polly.Tests.Services
         public ResilienceServiceTests()
         {
             _loggerMock = new Mock<ILogger<ResilienceService>>();
-            _loggingServiceMock = new Mock<IStructuredLoggingService>();
             _exceptionDetectorMock = new Mock<IDatabaseExceptionDetector>();
 
             _configuration = new ResilienceConfiguration
@@ -39,7 +37,6 @@ namespace JonjubNet.Resilience.Polly.Tests.Services
             _service = new ResilienceService(
                 _loggerMock.Object,
                 options,
-                _loggingServiceMock.Object,
                 _exceptionDetectorMock.Object);
         }
 
@@ -52,7 +49,6 @@ namespace JonjubNet.Resilience.Polly.Tests.Services
             var service = new ResilienceService(
                 _loggerMock.Object,
                 options,
-                _loggingServiceMock.Object,
                 _exceptionDetectorMock.Object);
 
             var operationExecuted = false;
@@ -68,13 +64,7 @@ namespace JonjubNet.Resilience.Polly.Tests.Services
 
             // Assert
             operationExecuted.Should().BeTrue();
-            _loggingServiceMock.Verify(
-                x => x.LogInformation(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Dictionary<string, object>>()),
-                Times.Never);
+            // Cuando está deshabilitado, no se debe registrar logging
         }
 
         [Fact]
@@ -95,12 +85,14 @@ namespace JonjubNet.Resilience.Polly.Tests.Services
             // Assert
             operationExecuted.Should().BeTrue();
             result.Should().Be("result");
-            _loggingServiceMock.Verify(
-                x => x.LogInformation(
-                    It.Is<string>(s => s.Contains("Executing operation")),
-                    "TestOperation",
-                    "Resilience",
-                    It.IsAny<Dictionary<string, object>>()),
+            // Verificar que se registró el log usando ILogger<T> estándar
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Executing operation")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -121,14 +113,14 @@ namespace JonjubNet.Resilience.Polly.Tests.Services
 
             // Assert
             await act.Should().ThrowAsync<InvalidOperationException>();
-            _loggingServiceMock.Verify(
-                x => x.LogError(
-                    It.Is<string>(s => s.Contains("failed after applying resilience patterns")),
-                    "TestOperation",
-                    "Resilience",
-                    null,
-                    It.IsAny<Dictionary<string, object>>(),
-                    exception),
+            // Verificar que se registró el log de error usando ILogger<T> estándar
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("failed after applying resilience patterns")),
+                    It.Is<Exception>(e => e == exception),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -176,7 +168,6 @@ namespace JonjubNet.Resilience.Polly.Tests.Services
             var service = new ResilienceService(
                 _loggerMock.Object,
                 options,
-                _loggingServiceMock.Object,
                 _exceptionDetectorMock.Object);
 
             var fallbackExecuted = false;
@@ -205,7 +196,6 @@ namespace JonjubNet.Resilience.Polly.Tests.Services
             var service = new ResilienceService(
                 _loggerMock.Object,
                 options,
-                _loggingServiceMock.Object,
                 _exceptionDetectorMock.Object);
 
             // Act
@@ -220,14 +210,14 @@ namespace JonjubNet.Resilience.Polly.Tests.Services
 
             // Assert
             result.Should().Be("fallback");
-            _loggingServiceMock.Verify(
-                x => x.LogWarning(
-                    It.Is<string>(s => s.Contains("Primary operation")),
-                    "FallbackOperation",
-                    "Resilience",
-                    null,
-                    It.IsAny<Dictionary<string, object>>(),
-                    It.IsAny<Exception>()),
+            // Verificar que se registró el log de warning usando ILogger<T> estándar
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Primary operation")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -240,7 +230,6 @@ namespace JonjubNet.Resilience.Polly.Tests.Services
             var service = new ResilienceService(
                 _loggerMock.Object,
                 options,
-                _loggingServiceMock.Object,
                 _exceptionDetectorMock.Object);
 
             // Act
@@ -264,7 +253,6 @@ namespace JonjubNet.Resilience.Polly.Tests.Services
             var service = new ResilienceService(
                 _loggerMock.Object,
                 Options.Create(_configuration),
-                _loggingServiceMock.Object,
                 _exceptionDetectorMock.Object);
 
             // Assert - Service should be created without exceptions

@@ -53,18 +53,18 @@ Esta guía está diseñada para:
 
 #### Opción A: NuGet Package Manager
 ```powershell
-Install-Package JonjubNet.Resilience -Version 1.0.11
+Install-Package JonjubNet.Resilience -Version 1.0.12
 ```
 
 #### Opción B: .NET CLI
 ```bash
-dotnet add package JonjubNet.Resilience --version 1.0.11
+dotnet add package JonjubNet.Resilience --version 1.0.12
 ```
 
 #### Opción C: PackageReference
 ```xml
 <ItemGroup>
-  <PackageReference Include="JonjubNet.Resilience" Version="1.0.11" />
+  <PackageReference Include="JonjubNet.Resilience" Version="1.0.12" />
 </ItemGroup>
 ```
 
@@ -306,17 +306,36 @@ El componente soporta detección de excepciones transitorias para:
 
 ---
 
-## Integración con Observabilidad
+## Logging e Integración con Observabilidad
 
-El componente se integra con `JonjubNet.Observability` a través de `IStructuredLoggingService`:
+Este componente usa **`ILogger<T>` estándar** de Microsoft.Extensions.Logging para logging interno. El componente **no depende** de ningún componente de observabilidad.
+
+### Configuración de Logging
+
+El servicio consumidor configura los **logging providers** según sus necesidades:
 
 ```csharp
 // En tu Program.cs
+var builder = WebApplication.CreateBuilder(args);
+
+// Registrar resiliencia (independiente)
+builder.Services.AddJonjubNetResilience(builder.Configuration);
+
+// Configurar logging providers
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+// Si quieres usar observabilidad estructurada, configura el provider correspondiente
 builder.Services.AddJonjubNetObservability(builder.Configuration);
-builder.Services.AddResilienceInfrastructure(builder.Configuration);
 ```
 
-Todas las operaciones de resiliencia se registran automáticamente en el sistema de logging estructurado.
+### Principio de Diseño
+
+- **El componente de resiliencia**: Solo hace logging interno usando `ILogger<T>` estándar
+- **El servicio consumidor**: Configura los logging providers (Console, File, Observability, etc.)
+- **Separación de responsabilidades**: El componente no conoce cómo se procesan los logs
+
+Los logs del componente de resiliencia serán capturados automáticamente por los logging providers configurados en el servicio consumidor.
 
 ---
 

@@ -29,7 +29,6 @@ namespace JonjubNet.Resilience.Polly.Services
 
         private readonly ILogger<ResilienceService> _logger;
         private readonly ResilienceConfiguration _configuration;
-        private readonly IStructuredLoggingService _loggingService;
         private readonly IDatabaseExceptionDetector _exceptionDetector;
         private readonly ConcurrentDictionary<string, ResiliencePipeline> _pipelines = new();
         private long _pipelineCount = 0; // Contador thread-safe para límite de memoria
@@ -37,12 +36,10 @@ namespace JonjubNet.Resilience.Polly.Services
         public ResilienceService(
             ILogger<ResilienceService> logger,
             IOptions<ResilienceConfiguration> configuration,
-            IStructuredLoggingService loggingService,
             IDatabaseExceptionDetector? exceptionDetector = null)
         {
             _logger = logger;
             _configuration = configuration.Value;
-            _loggingService = loggingService;
             _exceptionDetector = exceptionDetector ?? new DatabaseExceptionDetector();
             InitializePipelines();
         }
@@ -66,34 +63,29 @@ namespace JonjubNet.Resilience.Polly.Services
 
             try
             {
-                _loggingService.LogInformation(
-                    $"Executing operation '{operationName}' with resilience patterns",
+                _logger.LogInformation(
+                    "Executing operation '{OperationName}' with resilience patterns. Service: {ServiceName}",
                     operationName,
-                    ResilienceCategory,
-                    enrichedContext);
+                    serviceName);
 
                 var result = await pipeline.ExecuteAsync(async (cancellationToken) =>
                 {
                     return await operation();
                 });
 
-                _loggingService.LogInformation(
-                    $"Operation '{operationName}' completed successfully",
+                _logger.LogInformation(
+                    "Operation '{OperationName}' completed successfully. Service: {ServiceName}",
                     operationName,
-                    ResilienceCategory,
-                    enrichedContext);
+                    serviceName);
 
                 return result;
             }
             catch (Exception ex)
             {
-                _loggingService.LogError(
-                    $"Operation '{operationName}' failed after applying resilience patterns: {ex.Message}",
+                _logger.LogError(ex,
+                    "Operation '{OperationName}' failed after applying resilience patterns. Service: {ServiceName}",
                     operationName,
-                    ResilienceCategory,
-                    null,
-                    enrichedContext,
-                    ex);
+                    serviceName);
 
                 throw;
             }
@@ -165,13 +157,10 @@ namespace JonjubNet.Resilience.Polly.Services
                     }
                     catch (Exception ex)
                     {
-                        _loggingService.LogWarning(
-                            $"Primary operation '{operationName}' failed, attempting fallback: {ex.Message}",
+                        _logger.LogWarning(ex,
+                            "Primary operation '{OperationName}' failed, attempting fallback. Service: {ServiceName}",
                             operationName,
-                            ResilienceCategory,
-                            null,
-                            enrichedContext,
-                            ex);
+                            serviceName);
 
                         return await fallbackOperation();
                     }
@@ -179,13 +168,10 @@ namespace JonjubNet.Resilience.Polly.Services
             }
             catch (Exception ex)
             {
-                _loggingService.LogError(
-                    $"Both primary and fallback operations failed for '{operationName}': {ex.Message}",
+                _logger.LogError(ex,
+                    "Both primary and fallback operations failed for '{OperationName}'. Service: {ServiceName}",
                     operationName,
-                    ResilienceCategory,
-                    null,
-                    enrichedContext,
-                    ex);
+                    serviceName);
 
                 throw;
             }

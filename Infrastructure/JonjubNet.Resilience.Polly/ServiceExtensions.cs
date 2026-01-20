@@ -19,8 +19,11 @@ namespace JonjubNet.Resilience.Polly
             // Registrar el detector de excepciones
             services.AddSingleton<IDatabaseExceptionDetector, DatabaseExceptionDetector>();
 
-            // Registrar el servicio de resiliencia
+            // Registrar el servicio de resiliencia (API legacy)
             services.AddScoped<IResilienceService, ResilienceService>();
+
+            // Registrar el cliente de resiliencia (API nueva con pipelines nombrados)
+            services.AddScoped<IResilienceClient, ResilienceClient>();
 
             return services;
         }

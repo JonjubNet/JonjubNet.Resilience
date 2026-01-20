@@ -42,6 +42,69 @@ namespace JonjubNet.Resilience.Core.Configuration
         /// Configuración específica por servicio
         /// </summary>
         public Dictionary<string, ServiceResilienceConfiguration> Services { get; set; } = new();
+
+        /// <summary>
+        /// Configuración de pipelines nombrados
+        /// </summary>
+        public Dictionary<string, PipelineConfiguration> Pipelines { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Configuración de un pipeline de resiliencia nombrado
+    /// </summary>
+    public class PipelineConfiguration
+    {
+        public bool Enabled { get; set; } = true;
+        
+        /// <summary>
+        /// Configuración de Retry para este pipeline
+        /// </summary>
+        public PipelineRetryConfiguration? Retry { get; set; }
+
+        /// <summary>
+        /// Configuración de Circuit Breaker para este pipeline
+        /// </summary>
+        public PipelineCircuitBreakerConfiguration? CircuitBreaker { get; set; }
+
+        /// <summary>
+        /// Configuración de Timeout para este pipeline
+        /// </summary>
+        public PipelineTimeoutConfiguration? Timeout { get; set; }
+    }
+
+    /// <summary>
+    /// Configuración de Retry para un pipeline
+    /// </summary>
+    public class PipelineRetryConfiguration
+    {
+        public int MaxRetryAttempts { get; set; } = 3;
+        public int DelaySeconds { get; set; } = 1;
+        public int DelayMilliseconds { get; set; } = 0; // Si se especifica, tiene prioridad sobre DelaySeconds
+        public string BackoffType { get; set; } = "Exponential"; // Exponential, Linear, Fixed
+        public double JitterPercent { get; set; } = 0.1;
+        public bool HandleDeadlocks { get; set; } = false;
+        public bool HandleTimeouts { get; set; } = false;
+    }
+
+    /// <summary>
+    /// Configuración de Circuit Breaker para un pipeline
+    /// </summary>
+    public class PipelineCircuitBreakerConfiguration
+    {
+        public bool Enabled { get; set; } = true;
+        public double FailureRatio { get; set; } = 0.5;
+        public int SamplingDurationSeconds { get; set; } = 10;
+        public int MinimumThroughput { get; set; } = 5;
+        public int BreakDurationSeconds { get; set; } = 30;
+    }
+
+    /// <summary>
+    /// Configuración de Timeout para un pipeline
+    /// </summary>
+    public class PipelineTimeoutConfiguration
+    {
+        public bool Enabled { get; set; } = true;
+        public int TimeoutSeconds { get; set; } = 30;
     }
 
     /// <summary>

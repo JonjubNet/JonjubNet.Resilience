@@ -68,7 +68,8 @@
 - ✅ Estructura de tests optimizada
 
 #### **Integración**
-- ✅ Integración con `IStructuredLoggingService` (componente de observabilidad)
+- ✅ **Logging genérico estándar**: Usa `ILogger<T>` de Microsoft.Extensions.Logging
+- ✅ **Sin dependencias externas**: El componente no depende de componentes de observabilidad
 - ✅ Configuración flexible via `IConfiguration`
 - ✅ Inyección de dependencias nativa
 - ✅ Extensiones de servicio para fácil registro
@@ -224,7 +225,7 @@
 3. **Pipelines Especializados**: Pipelines optimizados por tipo de operación (HTTP, Database, Cache)
 4. **Thread-Safety Avanzado**: Uso de `ConcurrentDictionary` y `Interlocked` sin locks explícitos
 5. **Optimizaciones de Performance**: String interning, pre-allocación, early returns
-6. **Integración con Observabilidad**: Integración nativa con `IStructuredLoggingService`
+6. **Logging genérico estándar**: Usa `ILogger<T>` estándar de .NET, el servicio configura los providers
 7. **Configuración Flexible**: Configuración via `IConfiguration` con hot-reload
 8. **Sin Memory Leaks**: Límites de tamaño en pipeline cache, limpieza automática
 9. **Sin Race Conditions**: Operaciones atómicas con `Interlocked`, estructuras thread-safe
@@ -236,17 +237,17 @@
 
 ### NuGet Package Manager
 ```powershell
-Install-Package JonjubNet.Resilience -Version 1.0.11
+Install-Package JonjubNet.Resilience -Version 1.0.12
 ```
 
 ### .NET CLI
 ```bash
-dotnet add package JonjubNet.Resilience --version 1.0.11
+dotnet add package JonjubNet.Resilience --version 1.0.12
 ```
 
 ### PackageReference
 ```xml
-<PackageReference Include="JonjubNet.Resilience" Version="1.0.11" />
+<PackageReference Include="JonjubNet.Resilience" Version="1.0.12" />
 ```
 
 ---
@@ -461,17 +462,37 @@ Tests/
 
 ---
 
-## 🔗 Integración con Observabilidad
+## 🔗 Logging e Integración con Observabilidad
 
-Este componente se integra con `JonjubNet.Observability` a través de `IStructuredLoggingService`:
+Este componente usa **`ILogger<T>` estándar** de Microsoft.Extensions.Logging para logging interno. El componente **no depende** de ningún componente de observabilidad.
+
+### Configuración de Logging
+
+El servicio consumidor configura los **logging providers** según sus necesidades:
 
 ```csharp
 // En tu Program.cs
+var builder = WebApplication.CreateBuilder(args);
+
+// Registrar resiliencia (independiente, no requiere observabilidad)
+builder.Services.AddJonjubNetResilience(builder.Configuration);
+
+// Configurar logging providers según tus necesidades
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+// Si quieres usar observabilidad estructurada, configura el provider correspondiente
+// El componente de resiliencia registrará logs que serán procesados por estos providers
 builder.Services.AddJonjubNetObservability(builder.Configuration);
-builder.Services.AddResilienceInfrastructure(builder.Configuration);
 ```
 
-El componente de resiliencia automáticamente usará el servicio de logging estructurado para registrar todas las operaciones de resiliencia.
+### Principio de Diseño
+
+- **El componente de resiliencia**: Solo hace logging interno usando `ILogger<T>` estándar
+- **El servicio consumidor**: Configura los logging providers (Console, File, Observability, etc.)
+- **Separación de responsabilidades**: El componente no conoce cómo se procesan los logs
+
+Los logs del componente de resiliencia serán capturados automáticamente por los logging providers configurados en el servicio consumidor.
 
 ---
 

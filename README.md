@@ -97,7 +97,7 @@ app.Run();
 - ✅ **Pipelines Especializados**: HTTP, Database, Cache
 - ✅ **Thread-Safe**: ConcurrentDictionary, Interlocked
 - ✅ **Optimizado para Performance**: String interning, pre-allocación
-- ✅ **Integración con Observabilidad**: IStructuredLoggingService
+- ✅ **Logging genérico estándar**: Usa `ILogger<T>` estándar de .NET
 
 ---
 
@@ -105,17 +105,17 @@ app.Run();
 
 ### NuGet Package Manager
 ```powershell
-Install-Package JonjubNet.Resilience -Version 1.0.11
+Install-Package JonjubNet.Resilience -Version 1.0.12
 ```
 
 ### .NET CLI
 ```bash
-dotnet add package JonjubNet.Resilience --version 1.0.11
+dotnet add package JonjubNet.Resilience --version 1.0.12
 ```
 
 ### PackageReference
 ```xml
-<PackageReference Include="JonjubNet.Resilience" Version="1.0.11" />
+<PackageReference Include="JonjubNet.Resilience" Version="1.0.12" />
 ```
 
 ---

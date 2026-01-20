@@ -33,7 +33,7 @@ jobs:
       run: dotnet build JonjubNet.Resilience.slnx --configuration Release --no-restore
 
     - name: Test
-      run: dotnet test JonjubNet.Resilience.slnx --configuration Release --no-build --verbosity normal
+      run: dotnet test JonjubNet.Resilience.slnx --configuration Release --no-restore --verbosity normal
 
     - name: Pack
       run: dotnet pack Presentation/JonjubNet.Resilience/JonjubNet.Resilience.csproj --configuration Release --no-restore --output ./packages
