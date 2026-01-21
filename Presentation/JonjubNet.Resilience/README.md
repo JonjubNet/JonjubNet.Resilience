@@ -254,16 +254,29 @@ dotnet add package JonjubNet.Resilience --version 1.0.12
 
 ## 🚀 Inicio Rápido
 
-### 1. Configurar en `Program.cs`
+### 1. Configurar en `Program.cs` (recomendado: IResilienceClient por pipeline)
+
+```csharp
+using JonjubNet.Resilience.Hosting;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Agregar resiliencia: registra IResilienceClient listo para inyectar. Retry/CircuitBreaker/Timeout por pipeline.
+builder.Services.AddJonjubNetResilience(builder.Configuration);
+
+var app = builder.Build();
+app.Run();
+```
+
+Inyecte `IResilienceClient` (namespace `JonjubNet.Resilience.Abstractions`) y use nombres de `PipelineNames` (DatabaseRead, DatabaseWrite, DatabaseDelete, HttpExternal) o los definidos en `JonjubNet:Resilience:Pipelines`. Opcional: registre `IResilienceEventSink` para enviar eventos a su stack de observabilidad; el componente funciona sin sink.
+
+### 1b. Alternativa: `AddResilienceInfrastructure` (IResilienceService)
 
 ```csharp
 using JonjubNet.Resilience;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Agregar infraestructura de resiliencia
 builder.Services.AddResilienceInfrastructure(builder.Configuration);
-
 var app = builder.Build();
 app.Run();
 ```
@@ -464,7 +477,7 @@ Tests/
 
 ## 🔗 Logging e Integración con Observabilidad
 
-Este componente usa **`ILogger<T>` estándar** de Microsoft.Extensions.Logging para logging interno. El componente **no depende** de ningún componente de observabilidad.
+El componente **no depende** de JonjubNet.Observability ni de ILoggingClient/IMetricsClient. Para la API **IResilienceClient** (pipelines), los eventos se envían opcionalmente a **`IResilienceEventSink`** si lo registra en DI; sin sink, el componente funciona igual. La API legacy **IResilienceService** usa `ILogger<T>` estándar.
 
 ### Configuración de Logging
 
@@ -488,11 +501,9 @@ builder.Services.AddJonjubNetObservability(builder.Configuration);
 
 ### Principio de Diseño
 
-- **El componente de resiliencia**: Solo hace logging interno usando `ILogger<T>` estándar
-- **El servicio consumidor**: Configura los logging providers (Console, File, Observability, etc.)
-- **Separación de responsabilidades**: El componente no conoce cómo se procesan los logs
-
-Los logs del componente de resiliencia serán capturados automáticamente por los logging providers configurados en el servicio consumidor.
+- **IResilienceClient**: Emite eventos a `IResilienceEventSink` si está registrado; sin sink, no emite. Sin dependencia de Observabilidad.
+- **IResilienceService** (legacy): Usa `ILogger<T>` estándar; los logs pasan por los providers del consumidor.
+- **El servicio consumidor**: Puede implementar `IResilienceEventSink` y allí enviar a ILoggingClient/IMetricsClient/traces.
 
 ---
 

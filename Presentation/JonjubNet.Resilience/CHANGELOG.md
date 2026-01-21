@@ -5,6 +5,26 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.13] - 2025-01-13
+
+### Agregado
+- **`JonjubNet.Resilience.Abstractions`**: `IResilienceClient` con `ExecuteAsync(string pipelineName, Func<CancellationToken, Task> action, CancellationToken ct)` y `ExecuteAsync<T>(...)` para orquestación sin lógica de resiliencia en el microservicio.
+- **`IResilienceEventSink`** y **`ResilienceEvent`**: abstracción opcional para eventos; el componente funciona sin sink. El consumidor puede implementar el sink y enviar a su stack de observabilidad.
+- **`PipelineNames`**: constantes `DatabaseRead`, `DatabaseWrite`, `DatabaseDelete`, `HttpExternal` para uso en código y en `JonjubNet:Resilience:Pipelines`.
+- **`JonjubNet.Resilience.Hosting`**: `ServiceCollectionExtensions.AddJonjubNetResilience(IServiceCollection, IConfiguration)` — API estable para DI; registra opciones, pipelines y `IResilienceClient`.
+
+### Cambiado
+- **`ResilienceClient`**: implementa `JonjubNet.Resilience.Abstractions.IResilienceClient`; reemplazo de `ILogger` por `IResilienceEventSink` (opcional); parámetros `action` y `ct`.
+- **`appsettings.example.json`**: pipelines de ejemplo con `DatabaseRead`, `DatabaseWrite`, `DatabaseDelete`, `HttpExternal`.
+
+### Eliminado
+- **`JonjubNet.Resilience.Core.Interfaces.IResilienceClient`** (sustituido por `JonjubNet.Resilience.Abstractions.IResilienceClient`).
+
+### Arquitectura
+- **Sin dependencia de JonjubNet.Observability**: el componente no referencia `ILoggingClient` ni `IMetricsClient`. Observabilidad vía `IResilienceEventSink` opcional en el consumidor.
+
+---
+
 ## [1.0.12] - 2025-01-12
 
 ### Corregido

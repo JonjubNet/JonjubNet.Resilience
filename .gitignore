@@ -29,6 +29,7 @@ bld/
 *.nupkg
 *.snupkg
 **/packages/
+test-packages/
 !**/packages/build/
 *.nuget.props
 *.nuget.targets

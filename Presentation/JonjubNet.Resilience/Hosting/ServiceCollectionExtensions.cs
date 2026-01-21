@@ -6,13 +6,15 @@ using Microsoft.Extensions.DependencyInjection;
 namespace JonjubNet.Resilience.Hosting
 {
     /// <summary>
-    /// Extensiones para registrar la infraestructura de resiliencia de JonjubNet
+    /// Extensiones para registrar la infraestructura de resiliencia de JonjubNet.
+    /// El microservicio solo orquesta (DI + inyectar IResilienceClient); retry, circuit breaker y timeout viven en el componente.
     /// </summary>
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// Agrega la infraestructura de resiliencia de JonjubNet al contenedor de dependencias
-        /// Lee la configuración de "JonjubNet:Resilience" en appsettings.json
+        /// Agrega la infraestructura de resiliencia de JonjubNet al contenedor de dependencias.
+        /// Lee la configuración de "JonjubNet:Resilience" (Pipelines, Retry, CircuitBreaker, Timeout) en appsettings.
+        /// Registra IResilienceClient (JonjubNet.Resilience.Abstractions) listo para inyectar. Opcional: registre IResilienceEventSink para eventos.
         /// </summary>
         /// <param name="services">Colección de servicios</param>
         /// <param name="configuration">Configuración de la aplicación</param>
@@ -21,13 +23,9 @@ namespace JonjubNet.Resilience.Hosting
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            // Leer configuración de "JonjubNet:Resilience"
             services.Configure<ResilienceConfiguration>(
                 configuration.GetSection("JonjubNet:Resilience"));
-
-            // Registrar la implementación de Polly (incluye IResilienceService e IResilienceClient)
             services.AddPollyResilience();
-
             return services;
         }
     }
